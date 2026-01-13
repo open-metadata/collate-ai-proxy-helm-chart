@@ -1,0 +1,71 @@
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+accountId: ""
+region: ""
+
+collate:
+  hostAndPort: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+commonLabels: {}
+podLabels: {}
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  annotations: {}
+  ports:
+    http: 9595
+    httpAdmin: 9596
+    grpc: 50051
+    metrics: 9464
+
+envFrom: []
+extraEnvs: []
+
+tolerations: []
+nodeSelector: {}
+affinity: {}
+
+resources:
+  limits:
+    memory: 2Gi
+  requests:
+    cpu: 300m
+    memory: 2Gi
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /healthcheck
+    port: http-admin
+  initialDelaySeconds: 60
+
+readinessProbe:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  annotations: {}
+  labels: {}
+
+volumes: []
+volumeMounts: []
