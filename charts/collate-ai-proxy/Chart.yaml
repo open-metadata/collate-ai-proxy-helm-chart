@@ -1,6 +1,6 @@
 apiVersion: v2
-name: caip
-description: Helm chart for deploying the Collate AI Proxy (CAIP)
+name: collate-ai-proxy
+description: Helm chart for deploying the Collate AI Proxy
 type: application
 version: 0.1.0
 appVersion: "1.11.4"
@@ -12,7 +12,5 @@ sources:
 
 keywords:
   - collate
-  - caip
-  - ai
-  - proxy
   - openmetadata
+  - collate-ai-proxy

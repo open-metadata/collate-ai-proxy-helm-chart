@@ -51,26 +51,59 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Resolve LLM provider base URL based on configured provider type
 */}}
-{{- define "caip.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "caip.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+{{- define "caip.llmBaseUrl" -}}
+{{- $llm := .Values.config.llmProvider | default (dict) -}}
+{{- $type := $llm.type | default "" -}}
+{{- $openAI := $llm.openAI | default (dict) -}}
+{{- $anthropic := $llm.anthropic | default (dict) -}}
+{{- $google := $llm.google | default (dict) -}}
+{{- $bedrock := $llm.bedrock | default (dict) -}}
+{{- $ollama := $llm.ollama | default (dict) -}}
+{{- if eq $type "anthropic" -}}
+{{- default "" $anthropic.baseUrl -}}
+{{- else if eq $type "google" -}}
+{{- default "" $google.baseUrl -}}
+{{- else if eq $type "bedrock" -}}
+{{- default "" $bedrock.baseUrl -}}
+{{- else if eq $type "ollama" -}}
+{{- default "" $ollama.baseUrl -}}
+{{- else -}}
+{{- default "" $openAI.baseUrl -}}
+{{- end -}}
 {{- end }}
 
 {{/*
-Container image to deploy
+Resolve LLM provider API key based on configured provider type
 */}}
-{{- define "caip.image" -}}
-{{- $tag := coalesce .Values.image.tag .Chart.AppVersion -}}
-{{- if .Values.image.repository }}
-{{- printf "%s:%s" .Values.image.repository $tag -}}
-{{- else if and .Values.accountId .Values.region }}
-{{- printf "%s.dkr.ecr.%s.amazonaws.com/collate/ai-proxy:%s" (toString .Values.accountId) .Values.region $tag -}}
-{{- else }}
-{{- printf "collate/ai-proxy:%s" $tag -}}
+{{- define "caip.llmApiKey" -}}
+{{- $llm := .Values.config.llmProvider | default (dict) -}}
+{{- $type := $llm.type | default "" -}}
+{{- $openAI := $llm.openAI | default (dict) -}}
+{{- $anthropic := $llm.anthropic | default (dict) -}}
+{{- $google := $llm.google | default (dict) -}}
+{{- if eq $type "anthropic" -}}
+{{- default "" $anthropic.apiKey -}}
+{{- else if eq $type "google" -}}
+{{- default "" $google.apiKey -}}
+{{- else -}}
+{{- default "" $openAI.apiKey -}}
+{{- end -}}
 {{- end }}
+
+{{/*
+Resolve LLM provider API version based on configured provider
+*/}}
+{{- define "caip.llmApiVersion" -}}
+{{- $llm := .Values.config.llmProvider | default (dict) -}}
+{{- $type := $llm.type | default "" -}}
+{{- $openAI := $llm.openAI | default (dict) -}}
+{{- $azure := $openAI.azureOpenAI | default (dict) -}}
+{{- $anthropic := $llm.anthropic | default (dict) -}}
+{{- if eq $type "anthropic" -}}
+{{- default "" $anthropic.apiVersion -}}
+{{- else -}}
+{{- default "" $azure.apiVersion -}}
+{{- end -}}
 {{- end }}

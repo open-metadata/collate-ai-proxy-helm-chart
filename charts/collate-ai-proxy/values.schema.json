@@ -22,9 +22,6 @@
         }
       }
     },
-    "accountId": {
-      "type": "string"
-    },
     "region": {
       "type": "string"
     },
@@ -34,6 +31,156 @@
       "properties": {
         "hostAndPort": {
           "type": "string"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxUserMessageChars": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "llmProvider": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "maxIteration": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "dynamicMaxIterations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "openAI": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "apiKey": {
+                  "type": "string"
+                },
+                "baseUrl": {
+                  "type": "string"
+                },
+                "chatCompletionsPath": {
+                  "type": "string"
+                },
+                "responsesAPIPath": {
+                  "type": "string"
+                },
+                "embeddingsPath": {
+                  "type": "string"
+                },
+                "moderationsPath": {
+                  "type": "string"
+                },
+                "azureOpenAI": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "apiVersion": {
+                      "type": "string"
+                    },
+                    "deploymentName": {
+                      "type": "string"
+                    },
+                    "resourceName": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "anthropic": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "apiKey": {
+                  "type": "string"
+                },
+                "baseUrl": {
+                  "type": "string"
+                },
+                "apiVersion": {
+                  "type": "string"
+                }
+              }
+            },
+            "google": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "apiKey": {
+                  "type": "string"
+                },
+                "baseUrl": {
+                  "type": "string"
+                }
+              }
+            },
+            "bedrock": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "awsAccessKeyId": {
+                  "type": "string"
+                },
+                "awsSecretAccessKey": {
+                  "type": "string"
+                },
+                "awsRegion": {
+                  "type": "string"
+                },
+                "awsSessionToken": {
+                  "type": "string"
+                },
+                "baseUrl": {
+                  "type": "string"
+                },
+                "enableLogging": {
+                  "type": "boolean"
+                },
+                "requestTimeoutMillis": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "connectTimeoutMillis": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "socketTimeoutMillis": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ollama": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "baseUrl": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -57,24 +204,6 @@
     },
     "podAnnotations": {
       "type": "object"
-    },
-    "serviceAccount": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "create": {
-          "type": "boolean"
-        },
-        "automount": {
-          "type": "boolean"
-        },
-        "annotations": {
-          "type": "object"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
     },
     "podSecurityContext": {
       "type": "object"
