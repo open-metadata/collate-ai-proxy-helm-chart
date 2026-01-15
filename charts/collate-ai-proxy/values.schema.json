@@ -196,6 +196,24 @@
     "fullnameOverride": {
       "type": "string"
     },
+    "serviceAccount": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "automount": {
+          "type": "boolean"
+        }
+      }
+    },
     "commonLabels": {
       "type": "object"
     },

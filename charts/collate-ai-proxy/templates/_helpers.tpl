@@ -107,3 +107,14 @@ Resolve LLM provider API version based on configured provider
 {{- default "" $azure.apiVersion -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Resolve the service account name used by workloads
+*/}}
+{{- define "caip.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{- default (include "caip.fullname" .) .Values.serviceAccount.name -}}
+{{- else -}}
+{{- default "default" .Values.serviceAccount.name -}}
+{{- end -}}
+{{- end }}
