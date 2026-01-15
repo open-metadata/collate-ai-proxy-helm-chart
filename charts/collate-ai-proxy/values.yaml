@@ -20,13 +20,12 @@ collate:
 
 # Proxy behaviour configuration.
 config:
-  # Validation-specific settings.
   validation:
     # Maximum number of characters accepted in a user message.
     maxUserMessageChars: 8000
   # Large language model provider configuration.
   llmProvider:
-    # Type identifier of the configured LLM provider (e.g., bedrock, openai).
+    # Type identifier of the configured LLM provider (e.g., bedrock, openai, anthropic, google, ollama).
     type: "bedrock"
     # Provider-specific model identifier.
     model: "anthropic.claude-sonnet-4-5-20250929-v1:0"
