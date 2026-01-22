@@ -29,6 +29,8 @@ config:
     type: "bedrock"
     # Provider-specific model identifier.
     model: "anthropic.claude-sonnet-4-5-20250929-v1:0"
+    # Provider-specific identifier for the smaller model variant.
+    modelSmall: "anthropic.claude-haiku-4-5-20251001-v1:0"
     # Maximum reasoning iterations before forcing termination.
     maxIteration: 30
     # Maximum iterations when using dynamic cutoffs.

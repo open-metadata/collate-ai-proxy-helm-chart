@@ -75,6 +75,8 @@ spec:
               value: {{ default "" $llm.type | quote }}
             - name: LLM_PROVIDER_MODEL_TYPE
               value: {{ default "" $llm.model | quote }}
+            - name: LLM_PROVIDER_MODEL_TYPE_SMALL
+              value: {{ default "" $llm.modelSmall | quote }}
             - name: LLM_MAX_ITERATIONS
               value: {{ default 0 $llm.maxIteration | toString | quote }}
             - name: LLM_DYNAMIC_MAX_ITERATIONS

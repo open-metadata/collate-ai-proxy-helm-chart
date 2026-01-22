@@ -58,6 +58,9 @@
             "model": {
               "type": "string"
             },
+            "modelSmall": {
+              "type": "string"
+            },
             "maxIteration": {
               "type": "integer",
               "minimum": 0
