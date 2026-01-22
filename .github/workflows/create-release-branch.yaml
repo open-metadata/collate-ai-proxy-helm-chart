@@ -39,7 +39,7 @@ jobs:
         yq eval -i '.image.tag = strenv(image_version)' values.yaml
 
     - name: Create pull request
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         title: 'chore(release): Prepare ${{ inputs.release_branch_name }} release'
         body: |
