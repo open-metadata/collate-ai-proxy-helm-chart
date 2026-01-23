@@ -1,0 +1,205 @@
+# Number of CAIP replicas to run.
+replicaCount: 1
+
+# Container image settings for the CAIP deployment.
+image:
+  # Repository hosting the CAIP image.
+  repository: "118146679784.dkr.ecr.eu-west-1.amazonaws.com/collate/ai-proxy"
+  # Image tag to deploy; defaults to chart appVersion when empty.
+  tag: "om-0.0.1-cl-0.0.1"
+  # Kubernetes image pull policy for the CAIP container.
+  pullPolicy: IfNotPresent
+
+# Default AWS region override used when interacting with providers like Bedrock.
+region: ""
+
+# Connection details for the Collate backend.
+collate:
+  # Fully qualified host:port or URL for the Collate server; auto-generated if empty.
+  hostAndPort: ""
+
+# Proxy behaviour configuration.
+config:
+  validation:
+    # Maximum number of characters accepted in a user message.
+    maxUserMessageChars: 8000
+  # Large language model provider configuration.
+  llmProvider:
+    # Type identifier of the configured LLM provider (e.g., bedrock, openai, anthropic, google, ollama).
+    type: "bedrock"
+    # Provider-specific model identifier.
+    model: "anthropic.claude-sonnet-4-5-20250929-v1:0"
+    # Provider-specific identifier for the smaller model variant.
+    modelSmall: "anthropic.claude-haiku-4-5-20251001-v1:0"
+    # Maximum reasoning iterations before forcing termination.
+    maxIteration: 30
+    # Maximum iterations when using dynamic cutoffs.
+    dynamicMaxIterations: 50
+    # OpenAI-compatible provider options.
+    openAI:
+      # API key used when OpenAI is selected.
+      apiKey: ""
+      # Base URL for OpenAI API requests.
+      baseUrl: "https://api.openai.com"
+      # Path for chat completions endpoint.
+      chatCompletionsPath: "/v1/chat/completions"
+      # Path for legacy completions/responses endpoint.
+      responsesAPIPath: "/v1/responses"
+      # Path for embeddings endpoint.
+      embeddingsPath: "/v1/embeddings"
+      # Path for content moderation endpoint.
+      moderationsPath: "/v1/moderations"
+      # Azure OpenAI-specific settings.
+      azureOpenAI:
+        # When true, toggle Azure OpenAI integration logic.
+        enabled: false
+        # Azure OpenAI API version string.
+        apiVersion: ""
+        # Azure deployment name that serves the model.
+        deploymentName: ""
+        # Azure resource group name hosting the deployment.
+        resourceName: ""
+    # Anthropic provider settings.
+    anthropic:
+      # API key used for Anthropic requests.
+      apiKey: ""
+      # Base URL for Anthropic API calls.
+      baseUrl: "https://api.anthropic.com"
+      # API version string for Anthropic requests.
+      apiVersion: "2023-06-01"
+    # Google Generative AI provider settings.
+    google:
+      # API key used for Google Generative AI.
+      apiKey: ""
+      # Base URL for Google Generative AI API calls.
+      baseUrl: "https://generativelanguage.googleapis.com"
+    # Amazon Bedrock provider settings.
+    bedrock:
+      # AWS access key ID when using static credentials.
+      awsAccessKeyId: ""
+      # AWS secret access key matching the above ID.
+      awsSecretAccessKey: ""
+      # AWS region hosting the Bedrock endpoint.
+      awsRegion: ""
+      # Optional AWS session token for temporary credentials.
+      awsSessionToken: ""
+      # Service-specific base URL override for Bedrock.
+      baseUrl: ""
+      # Enables verbose logging for Bedrock requests when true.
+      enableLogging: false
+      # Request timeout in milliseconds for Bedrock calls.
+      requestTimeoutMillis: 900000
+      # Connection timeout in milliseconds for Bedrock calls.
+      connectTimeoutMillis: 900000
+      # Socket timeout in milliseconds for Bedrock calls.
+      socketTimeoutMillis: 900000
+    # Ollama provider settings.
+    ollama:
+      # Base URL of the Ollama server.
+      baseUrl: "http://localhost:11434"
+
+# Image pull secret references for private registries.
+imagePullSecrets: []
+# Optional override for the name portion of chart resources.
+nameOverride: ""
+# Optional override for the fully qualified name of chart resources.
+fullnameOverride: ""
+
+# Service account used by the deployment; set name to reuse an existing one.
+serviceAccount:
+  # Set to false to skip creating a ServiceAccount in this release.
+  create: true
+  # Provide a name to bind to an existing or custom-named ServiceAccount.
+  name: ""
+  # Extra annotations applied to the created ServiceAccount.
+  annotations: {}
+  # Controls automount of service account tokens for the pods.
+  automount: true
+
+# Additional labels applied to all chart resources.
+commonLabels: {}
+# Extra labels applied only to the pods.
+podLabels: {}
+# Extra annotations applied only to the pods.
+podAnnotations: {}
+
+# Pod-level security context configuration.
+podSecurityContext: {}
+# Container-level security context configuration.
+securityContext: {}
+
+# ClusterIP service configuration for exposing CAIP endpoints.
+service:
+  # Kubernetes service type (ClusterIP, NodePort, LoadBalancer).
+  type: ClusterIP
+  # Optional annotations for the generated Service resource.
+  annotations: {}
+  # Port mappings exposed by the Service.
+  ports:
+    # HTTP port served by the proxy.
+    http: 9595
+    # Administrative HTTP port exposed by the proxy.
+    httpAdmin: 9596
+    # gRPC port used by the proxy.
+    grpc: 50051
+    # Metrics port scraped by Prometheus.
+    metrics: 9464
+
+# List of envFrom sources injected into the container.
+envFrom: []
+# Additional environment variables added to the container.
+extraEnvs: []
+
+# Tolerations applied to the pod spec.
+tolerations: []
+# Node selector applied to the pod spec.
+nodeSelector: {}
+# Affinity rules applied to the pod spec.
+affinity: {}
+
+# Resource requests and limits for the container.
+resources:
+  # Resource limits for the container.
+  limits:
+    # Memory limit string for the container.
+    memory: 2Gi
+  # Resource requests for the container.
+  requests:
+    # CPU request string for the container.
+    cpu: 300m
+    # Memory request string for the container.
+    memory: 2Gi
+
+# Liveness probe configuration for the main container.
+livenessProbe:
+  # Toggle liveness probe configuration.
+  enabled: true
+  # HTTP GET probe definition.
+  httpGet:
+    # Path hit by the liveness probe.
+    path: /healthcheck
+    # Named container port used by the probe.
+    port: http-admin
+  # Delay in seconds before the probe starts.
+  initialDelaySeconds: 60
+
+# Readiness probe configuration for the main container.
+readinessProbe:
+  # Toggle readiness probe configuration.
+  enabled: false
+
+# ServiceMonitor configuration for Prometheus Operator.
+serviceMonitor:
+  # Toggle creation of a ServiceMonitor resource.
+  enabled: false
+  # Scrape interval for the ServiceMonitor.
+  interval: 30s
+  # Annotations applied to the ServiceMonitor.
+  annotations: {}
+  # Labels applied to the ServiceMonitor.
+  labels: {}
+
+# Additional volumes attached to the pod.
+volumes: []
+# Volume mounts applied to the container.
+volumeMounts: []

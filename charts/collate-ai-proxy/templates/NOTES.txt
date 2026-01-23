@@ -1,0 +1,17 @@
+The Collate AI Proxy (CAIP) service has been installed.
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+1. Wait for the external address:
+   kubectl get svc --namespace {{ .Release.Namespace }} {{ include "caip.fullname" . }} -w
+2. Once assigned, reach CAIP over HTTP on port {{ .Values.service.ports.http }} and gRPC on port {{ .Values.service.ports.grpc }}.
+{{- else if contains "NodePort" .Values.service.type }}
+1. Capture the node IP and node port:
+   NODE_PORT=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "caip.fullname" . }} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+   NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
+2. Reach CAIP at http://$NODE_IP:$NODE_PORT
+{{- else }}
+1. Forward the service locally to reach the HTTP endpoint:
+   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "caip.fullname" . }} 9595:{{ .Values.service.ports.http }}
+{{- end }}
+
+Metrics are exposed on port {{ .Values.service.ports.metrics }}.

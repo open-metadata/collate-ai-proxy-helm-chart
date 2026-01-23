@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "caip.fullname" . }}
+  labels:
+    {{- include "caip.labels" . | nindent 4 }}
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "caip.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "caip.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "caip.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "caip.name" . }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- $cfg := .Values.config | default (dict) }}
+          {{- $validation := $cfg.validation | default (dict) }}
+          {{- $llm := $cfg.llmProvider | default (dict) }}
+          {{- $openAI := $llm.openAI | default (dict) }}
+          {{- $azure := $openAI.azureOpenAI | default (dict) }}
+          {{- $bedrock := $llm.bedrock | default (dict) }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.ports.http }}
+              protocol: TCP
+            - name: http-admin
+              containerPort: {{ .Values.service.ports.httpAdmin }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.service.ports.grpc }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.service.ports.metrics }}
+              protocol: TCP
+          env:
+            - name: COLLATE_SERVER_HOST_AND_PORT
+              value: {{ coalesce .Values.collate.hostAndPort (printf "http://collate.%s.svc.cluster.local:8585" .Release.Namespace) | quote }}
+            {{- $awsRegion := coalesce $bedrock.awsRegion .Values.region }}
+            {{- if $awsRegion }}
+            - name: AWS_REGION
+              value: {{ $awsRegion | quote }}
+            {{- end }}
+            - name: MAX_USER_MESSAGE_CHARS
+              value: {{ default 0 $validation.maxUserMessageChars | toString | quote }}
+            - name: LLM_PROVIDER
+              value: {{ default "" $llm.type | quote }}
+            - name: LLM_PROVIDER_MODEL_TYPE
+              value: {{ default "" $llm.model | quote }}
+            - name: LLM_PROVIDER_MODEL_TYPE_SMALL
+              value: {{ default "" $llm.modelSmall | quote }}
+            - name: LLM_MAX_ITERATIONS
+              value: {{ default 0 $llm.maxIteration | toString | quote }}
+            - name: LLM_DYNAMIC_MAX_ITERATIONS
+              value: {{ default 0 $llm.dynamicMaxIterations | toString | quote }}
+            - name: LLM_PROVIDER_API_KEY
+              value: {{ include "caip.llmApiKey" . | quote }}
+            - name: LLM_PROVIDER_BASE_URL
+              value: {{ include "caip.llmBaseUrl" . | quote }}
+            - name: LLM_PROVIDER_API_VERSION
+              value: {{ include "caip.llmApiVersion" . | quote }}
+            - name: LLM_OPENAI_CHAT_COMPLETIONS_PATH
+              value: {{ default "" $openAI.chatCompletionsPath | quote }}
+            - name: LLM_OPENAI_COMPLETIONS_PATH
+              value: {{ default "" $openAI.responsesAPIPath | quote }}
+            - name: LLM_OPENAI_EMBEDDINGS_PATH
+              value: {{ default "" $openAI.embeddingsPath | quote }}
+            - name: LLM_OPENAI_MODERATIONS_PATH
+              value: {{ default "" $openAI.moderationsPath | quote }}
+            - name: LLM_AZURE_OPENAI_ENABLED
+              value: {{ default false $azure.enabled | toString | quote }}
+            - name: LLM_AZURE_OPENAI_DEPLOYMENT_NAME
+              value: {{ default "" $azure.deploymentName | quote }}
+            - name: LLM_AZURE_OPENAI_RESOURCE_NAME
+              value: {{ default "" $azure.resourceName | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ default "" $bedrock.awsAccessKeyId | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ default "" $bedrock.awsSecretAccessKey | quote }}
+            - name: AWS_SESSION_TOKEN
+              value: {{ default "" $bedrock.awsSessionToken | quote }}
+            - name: LLM_BEDROCK_ENABLE_LOGGING
+              value: {{ default false $bedrock.enableLogging | toString | quote }}
+            - name: LLM_BEDROCK_REQUEST_TIMEOUT_MILLIS
+              value: {{ default 0 $bedrock.requestTimeoutMillis | toString | quote }}
+            - name: LLM_BEDROCK_CONNECT_TIMEOUT_MILLIS
+              value: {{ default 0 $bedrock.connectTimeoutMillis | toString | quote }}
+            - name: LLM_BEDROCK_SOCKET_TIMEOUT_MILLIS
+              value: {{ default 0 $bedrock.socketTimeoutMillis | toString | quote }}
+            {{- with .Values.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            {{- toYaml (omit .Values.livenessProbe "enabled") | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            {{- toYaml (omit .Values.readinessProbe "enabled") | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
