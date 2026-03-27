@@ -42,8 +42,22 @@ spec:
           {{- $validation := $cfg.validation | default (dict) }}
           {{- $llm := $cfg.llmProvider | default (dict) }}
           {{- $openAI := $llm.openAI | default (dict) }}
+          {{- $anthropic := $llm.anthropic | default (dict) }}
+          {{- $google := $llm.google | default (dict) }}
           {{- $azure := $openAI.azureOpenAI | default (dict) }}
           {{- $bedrock := $llm.bedrock | default (dict) }}
+          {{- $providerType := default "" $llm.type }}
+          {{- $providerApiKey := default "" $openAI.apiKey }}
+          {{- $providerApiKeySecretRef := $openAI.apiKeySecretRef | default (dict) }}
+          {{- if eq $providerType "anthropic" }}
+          {{- $providerApiKey = default "" $anthropic.apiKey }}
+          {{- $providerApiKeySecretRef = $anthropic.apiKeySecretRef | default (dict) }}
+          {{- else if eq $providerType "google" }}
+          {{- $providerApiKey = default "" $google.apiKey }}
+          {{- $providerApiKeySecretRef = $google.apiKeySecretRef | default (dict) }}
+          {{- end }}
+          {{- $bedrockAwsAccessKeyIdSecretRef := $bedrock.awsAccessKeyIdSecretRef | default (dict) }}
+          {{- $bedrockAwsSecretAccessKeySecretRef := $bedrock.awsSecretAccessKeySecretRef | default (dict) }}
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -82,7 +96,14 @@ spec:
             - name: LLM_DYNAMIC_MAX_ITERATIONS
               value: {{ default 0 $llm.dynamicMaxIterations | toString | quote }}
             - name: LLM_PROVIDER_API_KEY
-              value: {{ include "caip.llmApiKey" . | quote }}
+              {{- if and $providerApiKeySecretRef.name $providerApiKeySecretRef.key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $providerApiKeySecretRef.name | quote }}
+                  key: {{ $providerApiKeySecretRef.key | quote }}
+              {{- else }}
+              value: {{ $providerApiKey | quote }}
+              {{- end }}
             - name: LLM_PROVIDER_BASE_URL
               value: {{ include "caip.llmBaseUrl" . | quote }}
             - name: LLM_PROVIDER_API_VERSION
@@ -102,9 +123,23 @@ spec:
             - name: LLM_AZURE_OPENAI_RESOURCE_NAME
               value: {{ default "" $azure.resourceName | quote }}
             - name: AWS_ACCESS_KEY_ID
+              {{- if and $bedrockAwsAccessKeyIdSecretRef.name $bedrockAwsAccessKeyIdSecretRef.key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $bedrockAwsAccessKeyIdSecretRef.name | quote }}
+                  key: {{ $bedrockAwsAccessKeyIdSecretRef.key | quote }}
+              {{- else }}
               value: {{ default "" $bedrock.awsAccessKeyId | quote }}
+              {{- end }}
             - name: AWS_SECRET_ACCESS_KEY
+              {{- if and $bedrockAwsSecretAccessKeySecretRef.name $bedrockAwsSecretAccessKeySecretRef.key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $bedrockAwsSecretAccessKeySecretRef.name | quote }}
+                  key: {{ $bedrockAwsSecretAccessKeySecretRef.key | quote }}
+              {{- else }}
               value: {{ default "" $bedrock.awsSecretAccessKey | quote }}
+              {{- end }}
             - name: AWS_SESSION_TOKEN
               value: {{ default "" $bedrock.awsSessionToken | quote }}
             - name: LLM_BEDROCK_ENABLE_LOGGING
