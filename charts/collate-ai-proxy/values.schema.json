@@ -76,6 +76,18 @@
                 "apiKey": {
                   "type": "string"
                 },
+                "apiKeySecretRef": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "baseUrl": {
                   "type": "string"
                 },
@@ -118,6 +130,18 @@
                 "apiKey": {
                   "type": "string"
                 },
+                "apiKeySecretRef": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "baseUrl": {
                   "type": "string"
                 },
@@ -133,6 +157,18 @@
                 "apiKey": {
                   "type": "string"
                 },
+                "apiKeySecretRef": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "baseUrl": {
                   "type": "string"
                 }
@@ -145,8 +181,32 @@
                 "awsAccessKeyId": {
                   "type": "string"
                 },
+                "awsAccessKeyIdSecretRef": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "awsSecretAccessKey": {
                   "type": "string"
+                },
+                "awsSecretAccessKeySecretRef": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "awsRegion": {
                   "type": "string"
@@ -368,6 +428,37 @@
         },
         "labels": {
           "type": "object"
+        }
+      }
+    },
+    "podDisruptionBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "minAvailable": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "maxUnavailable": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     },

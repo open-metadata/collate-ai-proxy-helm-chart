@@ -35,6 +35,12 @@ config:
     openAI:
       # API key used when OpenAI is selected.
       apiKey: ""
+      # Secret reference for OpenAI API key; takes precedence over apiKey when name and key are both set.
+      apiKeySecretRef:
+        # Kubernetes Secret resource name.
+        name: ""
+        # Key inside the Secret that stores the OpenAI API key.
+        key: ""
       # Base URL for OpenAI API requests.
       baseUrl: "https://api.openai.com"
       # Path for chat completions endpoint.
@@ -59,6 +65,12 @@ config:
     anthropic:
       # API key used for Anthropic requests.
       apiKey: ""
+      # Secret reference for Anthropic API key; takes precedence over apiKey when name and key are both set.
+      apiKeySecretRef:
+        # Kubernetes Secret resource name.
+        name: ""
+        # Key inside the Secret that stores the Anthropic API key.
+        key: ""
       # Base URL for Anthropic API calls.
       baseUrl: "https://api.anthropic.com"
       # API version string for Anthropic requests.
@@ -67,14 +79,32 @@ config:
     google:
       # API key used for Google Generative AI.
       apiKey: ""
+      # Secret reference for Google Generative AI API key; takes precedence over apiKey when name and key are both set.
+      apiKeySecretRef:
+        # Kubernetes Secret resource name.
+        name: ""
+        # Key inside the Secret that stores the Google API key.
+        key: ""
       # Base URL for Google Generative AI API calls.
       baseUrl: "https://generativelanguage.googleapis.com"
     # Amazon Bedrock provider settings.
     bedrock:
       # AWS access key ID when using static credentials.
       awsAccessKeyId: ""
+      # Secret reference for AWS access key ID; takes precedence when name and key are both set.
+      awsAccessKeyIdSecretRef:
+        # Kubernetes Secret resource name.
+        name: ""
+        # Key inside the Secret that stores awsAccessKeyId.
+        key: ""
       # AWS secret access key matching the above ID.
       awsSecretAccessKey: ""
+      # Secret reference for AWS secret access key; takes precedence when name and key are both set.
+      awsSecretAccessKeySecretRef:
+        # Kubernetes Secret resource name.
+        name: ""
+        # Key inside the Secret that stores awsSecretAccessKey.
+        key: ""
       # AWS region hosting the Bedrock endpoint.
       awsRegion: ""
       # Optional AWS session token for temporary credentials.
@@ -183,6 +213,12 @@ serviceMonitor:
   annotations: {}
   # Labels applied to the ServiceMonitor.
   labels: {}
+# PodDisruptionBudget configuration.
+podDisruptionBudget:
+  # Toggle creation of a PodDisruptionBudget resource.
+  enabled: false
+  # Minimum number of pods that must remain available during disruptions.
+  minAvailable: 1
 # Additional volumes attached to the pod.
 volumes: []
 # Volume mounts applied to the container.
