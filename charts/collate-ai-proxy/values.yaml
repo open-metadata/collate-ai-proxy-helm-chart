@@ -146,9 +146,18 @@ podLabels: {}
 # Extra annotations applied only to the pods.
 podAnnotations: {}
 # Pod-level security context configuration.
+# Set to {} (empty) for OpenShift restricted-v2 SCC — no pod-level security context should be set.
 podSecurityContext: {}
 # Container-level security context configuration.
-securityContext: {}
+# These values satisfy OpenShift restricted-v2 SCC requirements and are recommended
+# security best practices for all Kubernetes deployments.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
 # ClusterIP service configuration for exposing CAIP endpoints.
 service:
   # Kubernetes service type (ClusterIP, NodePort, LoadBalancer).
