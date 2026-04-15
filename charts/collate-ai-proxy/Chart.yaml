@@ -2,8 +2,8 @@ apiVersion: v2
 name: collate-ai-proxy
 description: Helm chart for deploying the Collate AI Proxy
 type: application
-version: "1.12.4"
-appVersion: "1.12.4"
+version: "1.12.5"
+appVersion: "1.12.5"
 home: https://github.com/open-metadata/collate-ai-proxy-helm-chart
 sources:
   - https://github.com/open-metadata/collate-ai-proxy-helm-chart
