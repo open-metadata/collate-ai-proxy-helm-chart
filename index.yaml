@@ -2,6 +2,23 @@ apiVersion: v1
 entries:
   collate-ai-proxy:
   - apiVersion: v2
+    appVersion: 1.12.4
+    created: "2026-04-15T12:28:02.28863209Z"
+    description: Helm chart for deploying the Collate AI Proxy
+    digest: 7521d47bbcc12f944c30aa997a105b4d4600355fad78a7d7ecd17be585c27e75
+    home: https://github.com/open-metadata/collate-ai-proxy-helm-chart
+    keywords:
+    - collate
+    - openmetadata
+    - collate-ai-proxy
+    name: collate-ai-proxy
+    sources:
+    - https://github.com/open-metadata/collate-ai-proxy-helm-chart
+    type: application
+    urls:
+    - https://github.com/open-metadata/collate-ai-proxy-helm-chart/releases/download/collate-ai-proxy-1.12.4/collate-ai-proxy-1.12.4.tgz
+    version: 1.12.4
+  - apiVersion: v2
     appVersion: 1.12.3
     created: "2026-03-24T17:12:04.32550899Z"
     description: Helm chart for deploying the Collate AI Proxy
@@ -52,4 +69,4 @@ entries:
     urls:
     - https://github.com/open-metadata/collate-ai-proxy-helm-chart/releases/download/collate-ai-proxy-0.0.1/collate-ai-proxy-0.0.1.tgz
     version: 0.0.1
-generated: "2026-03-24T17:12:04.325521083Z"
+generated: "2026-04-15T12:28:02.288764104Z"
