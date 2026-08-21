@@ -16,9 +16,21 @@ collate:
   hostAndPort: ""
 # Proxy behaviour configuration.
 config:
+  # Runtime logging configuration.
+  logging:
+    # Root logging level for the proxy.
+    level: "INFO"
+    # Logging level for BaseBuilder operations.
+    baseBuilderLogLevel: "INFO"
   validation:
     # Maximum number of characters accepted in a user message.
     maxUserMessageChars: 8000
+  # Limits applied when tool results are truncated before entering model context.
+  toolResultTruncation:
+    # Default maximum characters retained from a tool result.
+    defaultMaxChars: 20000
+    # Maximum characters retained for tool results classified as large payloads.
+    largePayloadMaxChars: 200000
   # Large language model provider configuration.
   llmProvider:
     # Type identifier of the configured LLM provider (e.g., bedrock, openai, anthropic, google, ollama).
@@ -27,10 +39,12 @@ config:
     model: "anthropic.claude-sonnet-4-5-20250929-v1:0"
     # Provider-specific identifier for the smaller model variant.
     modelSmall: "anthropic.claude-haiku-4-5-20251001-v1:0"
+    # Ordered fallback chain for advanced SQL-generation models; falls back to model when empty or unavailable.
+    modelAdvanced: "anthropic.claude-opus-4-8,anthropic.claude-opus-4-7"
     # Maximum reasoning iterations before forcing termination.
     maxIteration: 30
     # Maximum iterations when using dynamic cutoffs.
-    dynamicMaxIterations: 50
+    dynamicMaxIterations: 100
     # OpenAI-compatible provider options.
     openAI:
       # API key used when OpenAI is selected.
@@ -55,6 +69,8 @@ config:
       azureOpenAI:
         # When true, toggle Azure OpenAI integration logic.
         enabled: false
+        # Azure OpenAI authentication mode, such as api_key or managed_identity.
+        authType: "api_key"
         # Azure OpenAI API version string.
         apiVersion: ""
         # Azure deployment name that serves the model.
@@ -123,6 +139,67 @@ config:
     ollama:
       # Base URL of the Ollama server.
       baseUrl: "http://localhost:11434"
+  # Collate client settings used when creating agent context.
+  client:
+    # Token used to authenticate the bot with Collate.
+    botJwtToken: ""
+    # Secret reference for botJwtToken; takes precedence when both fields are set.
+    botJwtTokenSecretRef:
+      # Kubernetes Secret resource name.
+      name: ""
+      # Key inside the Secret that stores the bot JWT token.
+      key: ""
+    # Minimum vector-search relevance score included in context.
+    vectorSearchContextThreshold: 0.55
+    # Maximum vector-search results included in context.
+    vectorSearchContextSize: 40
+    # Maximum total context items supplied to agents.
+    maxContextItems: 25
+  # Name used to identify the OpenMetadata cluster.
+  clusterName: "openmetadata"
+  # Secrets-manager integration used by the proxy.
+  secretsManager:
+    # Supported provider, such as noop, aws, azure-kv, gcp, or kubernetes.
+    provider: "noop"
+    # Prefix applied when resolving secrets.
+    prefix: ""
+    # Collate bot name used by the secrets manager.
+    botName: "CollateAIApplicationBot"
+    parameters:
+      # Secrets-manager provider region.
+      region: ""
+      # Azure Key Vault name when using azure-kv.
+      vaultName: ""
+      # GCP project ID when using gcp.
+      projectId: ""
+      # Kubernetes namespace when using kubernetes.
+      namespace: "default"
+      # Whether the Kubernetes secrets manager runs in-cluster.
+      inCluster: false
+  # Sentry observability configuration.
+  sentry:
+    # Enables Sentry event reporting.
+    enabled: false
+    # Sentry DSN. Prefer dsnSecretRef in production.
+    dsn: ""
+    # Secret reference for dsn; takes precedence when both fields are set.
+    dsnSecretRef:
+      # Kubernetes Secret resource name.
+      name: ""
+      # Key inside the Secret that stores the Sentry DSN.
+      key: ""
+    # Sentry environment name.
+    environment: "development"
+    # Sentry server name.
+    serverName: "ai-platform"
+    # Fraction of traces sent to Sentry.
+    tracesSampleRate: 0.5
+    # Enables verbose Sentry debug logging.
+    debug: false
+    # Release identifier sent to Sentry.
+    release: ""
+    # Includes span attributes in Sentry events.
+    captureSpanAttributes: false
 # Image pull secret references for private registries.
 imagePullSecrets: []
 # Optional override for the name portion of chart resources.

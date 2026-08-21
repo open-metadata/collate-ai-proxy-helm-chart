@@ -38,11 +38,37 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "logging": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "level": {
+              "type": "string"
+            },
+            "baseBuilderLogLevel": {
+              "type": "string"
+            }
+          }
+        },
         "validation": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "maxUserMessageChars": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "toolResultTruncation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "defaultMaxChars": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "largePayloadMaxChars": {
               "type": "integer",
               "minimum": 0
             }
@@ -59,6 +85,9 @@
               "type": "string"
             },
             "modelSmall": {
+              "type": "string"
+            },
+            "modelAdvanced": {
               "type": "string"
             },
             "maxIteration": {
@@ -109,6 +138,9 @@
                   "properties": {
                     "enabled": {
                       "type": "boolean"
+                    },
+                    "authType": {
+                      "type": "string"
                     },
                     "apiVersion": {
                       "type": "string"
@@ -242,6 +274,122 @@
                   "type": "string"
                 }
               }
+            }
+          }
+        },
+        "client": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "botJwtToken": {
+              "type": "string"
+            },
+            "botJwtTokenSecretRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                }
+              }
+            },
+            "vectorSearchContextThreshold": {
+              "type": "number",
+              "minimum": 0
+            },
+            "vectorSearchContextSize": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxContextItems": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "clusterName": {
+          "type": "string"
+        },
+        "secretsManager": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "provider": {
+              "type": "string"
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "botName": {
+              "type": "string"
+            },
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "region": {
+                  "type": "string"
+                },
+                "vaultName": {
+                  "type": "string"
+                },
+                "projectId": {
+                  "type": "string"
+                },
+                "namespace": {
+                  "type": "string"
+                },
+                "inCluster": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "sentry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "dsn": {
+              "type": "string"
+            },
+            "dsnSecretRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "key": {
+                  "type": "string"
+                }
+              }
+            },
+            "environment": {
+              "type": "string"
+            },
+            "serverName": {
+              "type": "string"
+            },
+            "tracesSampleRate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "debug": {
+              "type": "boolean"
+            },
+            "release": {
+              "type": "string"
+            },
+            "captureSpanAttributes": {
+              "type": "boolean"
             }
           }
         }

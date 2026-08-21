@@ -39,13 +39,19 @@ spec:
           image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- $cfg := .Values.config | default (dict) }}
+          {{- $logging := $cfg.logging | default (dict) }}
           {{- $validation := $cfg.validation | default (dict) }}
+          {{- $toolResultTruncation := $cfg.toolResultTruncation | default (dict) }}
           {{- $llm := $cfg.llmProvider | default (dict) }}
           {{- $openAI := $llm.openAI | default (dict) }}
           {{- $anthropic := $llm.anthropic | default (dict) }}
           {{- $google := $llm.google | default (dict) }}
           {{- $azure := $openAI.azureOpenAI | default (dict) }}
           {{- $bedrock := $llm.bedrock | default (dict) }}
+          {{- $client := $cfg.client | default (dict) }}
+          {{- $secretsManager := $cfg.secretsManager | default (dict) }}
+          {{- $secretsManagerParameters := $secretsManager.parameters | default (dict) }}
+          {{- $sentry := $cfg.sentry | default (dict) }}
           {{- $providerType := default "" $llm.type }}
           {{- $providerApiKey := default "" $openAI.apiKey }}
           {{- $providerApiKeySecretRef := $openAI.apiKeySecretRef | default (dict) }}
@@ -58,6 +64,8 @@ spec:
           {{- end }}
           {{- $bedrockAwsAccessKeyIdSecretRef := $bedrock.awsAccessKeyIdSecretRef | default (dict) }}
           {{- $bedrockAwsSecretAccessKeySecretRef := $bedrock.awsSecretAccessKeySecretRef | default (dict) }}
+          {{- $botJwtTokenSecretRef := $client.botJwtTokenSecretRef | default (dict) }}
+          {{- $sentryDsnSecretRef := $sentry.dsnSecretRef | default (dict) }}
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -78,6 +86,10 @@ spec:
           env:
             - name: COLLATE_SERVER_HOST_AND_PORT
               value: {{ coalesce .Values.collate.hostAndPort (printf "http://collate.%s.svc.cluster.local:8585" .Release.Namespace) | quote }}
+            - name: LOG_LEVEL
+              value: {{ default "INFO" $logging.level | quote }}
+            - name: BASE_BUILDER_LOG_LEVEL
+              value: {{ default "INFO" $logging.baseBuilderLogLevel | quote }}
             {{- $awsRegion := coalesce $bedrock.awsRegion .Values.region }}
             {{- if $awsRegion }}
             - name: AWS_REGION
@@ -85,12 +97,18 @@ spec:
             {{- end }}
             - name: MAX_USER_MESSAGE_CHARS
               value: {{ default 0 $validation.maxUserMessageChars | toString | quote }}
+            - name: TOOL_RESULT_DEFAULT_MAX_CHARS
+              value: {{ default 0 $toolResultTruncation.defaultMaxChars | toString | quote }}
+            - name: TOOL_RESULT_LARGE_PAYLOAD_MAX_CHARS
+              value: {{ default 0 $toolResultTruncation.largePayloadMaxChars | toString | quote }}
             - name: LLM_PROVIDER
               value: {{ default "" $llm.type | quote }}
             - name: LLM_PROVIDER_MODEL_TYPE
               value: {{ default "" $llm.model | quote }}
             - name: LLM_PROVIDER_MODEL_TYPE_SMALL
               value: {{ default "" $llm.modelSmall | quote }}
+            - name: LLM_PROVIDER_MODEL_TYPE_ADVANCED
+              value: {{ default "" $llm.modelAdvanced | quote }}
             - name: LLM_MAX_ITERATIONS
               value: {{ default 0 $llm.maxIteration | toString | quote }}
             - name: LLM_DYNAMIC_MAX_ITERATIONS
@@ -118,6 +136,8 @@ spec:
               value: {{ default "" $openAI.moderationsPath | quote }}
             - name: LLM_AZURE_OPENAI_ENABLED
               value: {{ default false $azure.enabled | toString | quote }}
+            - name: LLM_AZURE_OPENAI_AUTH_TYPE
+              value: {{ default "api_key" $azure.authType | quote }}
             - name: LLM_AZURE_OPENAI_DEPLOYMENT_NAME
               value: {{ default "" $azure.deploymentName | quote }}
             - name: LLM_AZURE_OPENAI_RESOURCE_NAME
@@ -150,6 +170,62 @@ spec:
               value: {{ default 0 $bedrock.connectTimeoutMillis | toString | quote }}
             - name: LLM_BEDROCK_SOCKET_TIMEOUT_MILLIS
               value: {{ default 0 $bedrock.socketTimeoutMillis | toString | quote }}
+            - name: BOT_JWT_TOKEN
+              {{- if and $botJwtTokenSecretRef.name $botJwtTokenSecretRef.key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $botJwtTokenSecretRef.name | quote }}
+                  key: {{ $botJwtTokenSecretRef.key | quote }}
+              {{- else }}
+              value: {{ default "" $client.botJwtToken | quote }}
+              {{- end }}
+            - name: VECTOR_SEARCH_CONTEXT_THRESHOLD
+              value: {{ default 0 $client.vectorSearchContextThreshold | toString | quote }}
+            - name: VECTOR_SEARCH_CONTEXT_SIZE
+              value: {{ default 0 $client.vectorSearchContextSize | toString | quote }}
+            - name: MAX_CONTEXT_ITEMS
+              value: {{ default 0 $client.maxContextItems | toString | quote }}
+            - name: OPENMETADATA_CLUSTER_NAME
+              value: {{ default "openmetadata" $cfg.clusterName | quote }}
+            - name: SECRET_MANAGER
+              value: {{ default "noop" $secretsManager.provider | quote }}
+            - name: SECRETS_MANAGER_PREFIX
+              value: {{ default "" $secretsManager.prefix | quote }}
+            - name: SECRETS_MANAGER_BOT_NAME
+              value: {{ default "CollateAIApplicationBot" $secretsManager.botName | quote }}
+            - name: SECRETS_MANAGER_REGION
+              value: {{ default "" $secretsManagerParameters.region | quote }}
+            - name: SECRETS_MANAGER_VAULT_NAME
+              value: {{ default "" $secretsManagerParameters.vaultName | quote }}
+            - name: SECRETS_MANAGER_PROJECT_ID
+              value: {{ default "" $secretsManagerParameters.projectId | quote }}
+            - name: SECRETS_MANAGER_K8S_NAMESPACE
+              value: {{ default "default" $secretsManagerParameters.namespace | quote }}
+            - name: SECRETS_MANAGER_K8S_IN_CLUSTER
+              value: {{ default false $secretsManagerParameters.inCluster | toString | quote }}
+            - name: SENTRY_ENABLED
+              value: {{ default false $sentry.enabled | toString | quote }}
+            - name: SENTRY_DSN
+              {{- if and $sentryDsnSecretRef.name $sentryDsnSecretRef.key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $sentryDsnSecretRef.name | quote }}
+                  key: {{ $sentryDsnSecretRef.key | quote }}
+              {{- else }}
+              value: {{ default "" $sentry.dsn | quote }}
+              {{- end }}
+            - name: SENTRY_ENVIRONMENT
+              value: {{ default "development" $sentry.environment | quote }}
+            - name: SENTRY_SERVER_NAME
+              value: {{ default "ai-platform" $sentry.serverName | quote }}
+            - name: SENTRY_TRACES_SAMPLE_RATE
+              value: {{ default 0 $sentry.tracesSampleRate | toString | quote }}
+            - name: SENTRY_DEBUG
+              value: {{ default false $sentry.debug | toString | quote }}
+            - name: SENTRY_RELEASE
+              value: {{ default "" $sentry.release | quote }}
+            - name: SENTRY_CAPTURE_SPAN_ATTRIBUTES
+              value: {{ default false $sentry.captureSpanAttributes | toString | quote }}
             {{- with .Values.extraEnvs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
